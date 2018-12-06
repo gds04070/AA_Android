@@ -102,7 +102,6 @@ class MainActivity : AppCompatActivity() {
             if(!bt.isServiceAvailable){
                 bt.setupService()
                 bt.startService(BluetoothState.DEVICE_OTHER)
-                setup()
             }
         }
     }
@@ -122,7 +121,6 @@ class MainActivity : AppCompatActivity() {
             if(resultCode == Activity.RESULT_OK){
                 bt.setupService()
                 bt.startService(BluetoothState.DEVICE_OTHER)
-                setup()
             }else{
                 Toast.makeText(applicationContext, "Bluetooth was not enabled", Toast.LENGTH_SHORT).show()
             }
@@ -147,6 +145,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun setOnBtnClickListener(){
+        setup()
         removeItem()
         CalculateExpValue()
     }
