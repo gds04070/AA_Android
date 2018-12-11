@@ -137,6 +137,7 @@ class MainActivity : AppCompatActivity() {
 
     //리사이클러뷰
     private fun setRecyclerView(){
+        //Test용
         dataList.add(ChartData(1,"0"))
         dataList.add(ChartData(2,"0"))
 
@@ -196,8 +197,8 @@ class MainActivity : AppCompatActivity() {
     private fun CompareExpValue(expextValue: Double, realValue: Double){
         if((expextValue-realValue) != 0.0){
             var error : Double = (expextValue-realValue)*100.0/expextValue
+            tv_main_error.setText(error.toString())
             if(error > 5.0 || error < -5.0){
-                tv_main_error.setText(error.toString())
                 bt.send("F", true)
             }
         }
