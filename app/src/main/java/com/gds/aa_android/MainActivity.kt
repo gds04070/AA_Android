@@ -5,8 +5,10 @@ import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v4.app.ActivityCompat
 import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import app.akexorcist.bluetotohspp.library.BluetoothSPP
@@ -15,12 +17,17 @@ import app.akexorcist.bluetotohspp.library.DeviceList
 import com.gds.aa_android.adapter.ChartDataRecyclerViewAdapter
 import com.gds.aa_android.db.ChartData
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.rv_item_chart_data.*
+import org.jetbrains.anko.startActivity
 import org.jetbrains.anko.toast
 import java.lang.IndexOutOfBoundsException
 
 class MainActivity : AppCompatActivity() {
 
     var n : Int = 1
+
+    var realValue : Double = 0.0
+    var iexpextValue : Double = 0.0
 
     //블루투스
     private val bt : BluetoothSPP by lazy{
@@ -53,10 +60,11 @@ class MainActivity : AppCompatActivity() {
 
         bt.setOnDataReceivedListener(object : BluetoothSPP.OnDataReceivedListener{
             override fun onDataReceived(data: ByteArray?, message: String?) {
-                Toast.makeText(this@MainActivity,message,Toast.LENGTH_SHORT).show()
+                //Toast.makeText(this@MainActivity,message,Toast.LENGTH_SHORT).show()
                 tv_main_receiveText.setText(message)
                 if(!message.isNullOrEmpty()){
                     addItem(n, message)
+                    realValue = message.toDouble()/1000.0
                     n = n+1
                 }
             }
@@ -106,10 +114,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setup(){
+    private fun CheckExpectValue(){
         val btnSend = findViewById<Button>(R.id.btn_main_btSend)
         btnSend.setOnClickListener {
-            bt.send("F", true)
+            CompareExpValue(iexpextValue, realValue)
         }
     }
 
@@ -145,9 +153,12 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun setOnBtnClickListener(){
-        setup()
+        CheckExpectValue()
         removeItem()
         CalculateExpValue()
+        bt_drawing_chart.setOnClickListener {
+            startActivity<ChartActivity>()
+        }
     }
 
     private fun removeItem(){
@@ -166,11 +177,12 @@ class MainActivity : AppCompatActivity() {
     private fun CalculateExpValue() {
         bt_main_Calculate.setOnClickListener {
             var Length : String = et_main_lineLength.text.toString()
-            var g : Double = 9.8
+            var g : Double = 1000.0
             if(Length.isNotEmpty()){
                 if(Length.toDouble() > 0.0){
 
                     var expectValue = 2*Math.PI*Math.sqrt(Length.toDouble()/g)
+                    iexpextValue = expectValue
                     tv_main_expectValue.setText(expectValue.toString())
 
                 }else{
@@ -179,5 +191,19 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+
+    private fun CompareExpValue(expextValue: Double, realValue: Double){
+        if((expextValue-realValue) != 0.0){
+            var error : Double = (expextValue-realValue)*100.0/expextValue
+            if(error > 5.0 || error < -5.0){
+                tv_main_error.setText(error.toString())
+                bt.send("F", true)
+            }
+        }
+
+    }
+
+
 }
 
